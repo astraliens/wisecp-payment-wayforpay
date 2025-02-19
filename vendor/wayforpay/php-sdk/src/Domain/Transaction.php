@@ -15,6 +15,7 @@
 namespace WayForPay\SDK\Domain;
 
 use DateTime;
+use DateTimeZone;
 
 class Transaction extends TransactionBase
 {
@@ -94,11 +95,13 @@ class Transaction extends TransactionBase
         return new self(
             $data['merchantTransactionType'],
             $data['orderReference'],
-            new DateTime('@' . $data['createdDate']),
+//            new DateTime('@' . $data['createdDate']),
+            (new DateTime('@' . $data['createdDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())),
             $data['amount'],
             $data['currency'],
             $data['transactionStatus'],
-            new DateTime('@' . $data['processingDate']),
+//            new DateTime('@' . $data['processingDate']),
+            (new DateTime('@' . $data['processingDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())),
             $data['reasonCode'],
             $data['reason'],
             isset($data['email']) ? $data['email'] : null,

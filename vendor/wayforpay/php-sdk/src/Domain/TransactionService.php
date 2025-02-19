@@ -15,6 +15,7 @@
 namespace WayForPay\SDK\Domain;
 
 use DateTime;
+use DateTimeZone;
 
 class TransactionService extends TransactionBase
 {
@@ -37,6 +38,11 @@ class TransactionService extends TransactionBase
      * @var string
      */
     private $repayUrl;
+
+    /**
+     * @var string
+     */
+    private $orderNo;
 
     /**
      * @param array $data
@@ -67,17 +73,18 @@ class TransactionService extends TransactionBase
             'fee' => 0,
             'paymentSystem' => '',
             'repayUrl' => '',
+            'orderNo' => '',
         );
 
         $data = array_merge($default, $data);
 
         return new self(
             $data['orderReference'],
-            new DateTime('@' . $data['createdDate']),
+            (new DateTime('@' . $data['createdDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())),
             $data['amount'],
             $data['currency'],
             $data['transactionStatus'],
-            new DateTime('@' . $data['processingDate']),
+            (new DateTime('@' . $data['processingDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())),
             $data['reasonCode'],
             $data['reason'],
             isset($data['email']) ? $data['email'] : null,
@@ -93,7 +100,8 @@ class TransactionService extends TransactionBase
             isset($data['merchantAccount']) ? $data['merchantAccount'] : null,
             isset($data['recToken']) ? $data['recToken'] : null,
             isset($data['authCode']) ? $data['authCode'] : null,
-            isset($data['repayUrl']) ? $data['repayUrl'] : null
+            isset($data['repayUrl']) ? $data['repayUrl'] : null,
+            isset($data['orderNo']) ? $data['orderNo'] : null
         );
     }
 
@@ -118,7 +126,8 @@ class TransactionService extends TransactionBase
         $merchantAccount = null,
         $recToken = null,
         $authCode = null,
-        $repayUrl = null
+        $repayUrl = null,
+        $orderNo = null
     ) {
         parent::__construct(
             $orderReference,
@@ -145,6 +154,7 @@ class TransactionService extends TransactionBase
         $this->recToken = $recToken ? new CardToken($recToken) : null;
         $this->authCode = strval($authCode);
         $this->repayUrl = strval($repayUrl);
+        $this->orderNo  = strval($orderNo);
     }
 
     /**
@@ -177,5 +187,13 @@ class TransactionService extends TransactionBase
     public function getRepayUrl()
     {
         return $this->repayUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOrderNo()
+    {
+        return $this->orderNo;
     }
 }

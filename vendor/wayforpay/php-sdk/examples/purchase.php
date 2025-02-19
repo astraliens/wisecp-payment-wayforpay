@@ -19,6 +19,7 @@ use WayForPay\SDK\Credential\AccountSecretTestCredential;
 use WayForPay\SDK\Domain\Client;
 use WayForPay\SDK\Domain\Product;
 use WayForPay\SDK\Wizard\PurchaseWizard;
+use WayForPay\SDK\Domain\MerchantTypes;
 
 // Use test credential or yours
 $credential = new AccountSecretTestCredential();
@@ -27,9 +28,12 @@ $credential = new AccountSecretTestCredential();
 $form = PurchaseWizard::get($credential)
     ->setOrderReference(sha1(microtime(true)))
     ->setAmount(0.01)
+//    ->setApiVersion(\WayForPay\SDK\Form\PurchaseForm::API_VERSION_2)
     ->setCurrency('USD')
     ->setOrderDate(new \DateTime())
     ->setMerchantDomainName('https://google.com')
+//    ->setMerchantTransactionType(MerchantTypes::TRANSACTION_AUTO) 
+//    ->setMerchantTransactionType(MerchantTypes::TRANSACTION_AUTH) //  hold
     ->setClient(new Client(
         'John',
         'Dou',

@@ -17,63 +17,68 @@ namespace WayForPay\SDK\Domain;
 use DateTime;
 use DateTimeZone;
 
-class TransactionHistory extends TransactionBase
+class TransactionSettle extends TransactionBase
 {
     /**
      * @var string
      */
-    private $type;
+    private $merchantAccount;
 
     /**
-     * @var DateTime|null
+     * @var CardToken
      */
-    private $settlementDate;
+    private $recToken;
 
     /**
-     * @var float|null
+     * @var string
      */
-    private $settlementAmount;
+    private $authCode;
 
     /**
-     * @var float|null
+     * @var string
      */
-    private $refundAmount;
+    private $orderNo;
 
     /**
      * @param array $data
-     * @return TransactionHistory
+     * @return TransactionSettle
      * @throws \Exception
      */
     public static function fromArray(array $data)
     {
-        $required = array(
-            'transactionType',
-            'orderReference',
-            'createdDate',
-            'amount',
-            'currency',
-            'transactionStatus',
-            'processingDate',
-            'reasonCode',
-            'reason',
+        $default = array(
+            'merchantAccount' => '',
+            'orderReference' => '',
+            'merchantSignature' => '',
+            'amount' => 0,
+            'currency' => '',
+            'authCode' => 0,
+            'email' => '',
+            'phone' => '',
+            'createdDate' => 0,
+            'processingDate' => 0,
+            'cardPan' => '',
+            'cardType' => '',
+            'issuerBankCountry' => '',
+            'issuerBankName' => '',
+            'recToken' => '',
+            'transactionStatus' => '',
+            'reason' => '',
+            'reasonCode' => 0,
+            'fee' => 0,
+            'paymentSystem' => '',
+            'orderNo' => '',
         );
 
-        if ($fieldsMissed = array_diff($required, array_keys($data))) {
-            throw new \InvalidArgumentException(
-                'Transaction data have missed fields: ' . implode(', ', $fieldsMissed)
-            );
-        }
+        $data = array_merge($default, $data);
 
         return new self(
-            $data['transactionType'],
             $data['orderReference'],
-//            new DateTime('@' . $data['createdDate']),
-            (new DateTime('@' . $data['createdDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())),
+            (new DateTime('@' . (isset($data['createdDate'])?$data['createdDate']:time())))->setTimezone(new DateTimeZone(date_default_timezone_get())),
             $data['amount'],
             $data['currency'],
             $data['transactionStatus'],
-//            new DateTime('@' . $data['processingDate']),
-            (new DateTime('@' . $data['processingDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())),
+            (new DateTime('@' . (isset($data['processingDate'])?$data['processingDate']:time())))->setTimezone(new DateTimeZone(date_default_timezone_get())),
             $data['reasonCode'],
             $data['reason'],
             isset($data['email']) ? $data['email'] : null,
@@ -86,13 +91,14 @@ class TransactionHistory extends TransactionBase
             isset($data['fee']) ? $data['fee'] : null,
             isset($data['baseAmount']) ? $data['baseAmount'] : null,
             isset($data['baseCurrency']) ? $data['baseCurrency'] : null,
-            isset($data['settlementDate']) ? (new DateTime('@' . $data['settlementDate']))->setTimezone(new DateTimeZone(date_default_timezone_get())) : null,
-            isset($data['settlementAmount']) ? $data['settlementAmount'] : null
+            isset($data['merchantAccount']) ? $data['merchantAccount'] : null,
+            isset($data['recToken']) ? $data['recToken'] : null,
+            isset($data['authCode']) ? $data['authCode'] : null,
+            isset($data['orderNo']) ? $data['orderNo'] : null
         );
     }
 
     public function __construct(
-        $type,
         $orderReference,
         DateTime $createdDate,
         $amount, $currency,
@@ -110,8 +116,10 @@ class TransactionHistory extends TransactionBase
         $fee = null,
         $baseAmount = null,
         $baseCurrency = null,
-        DateTime $settlementDate = null,
-        $settlementAmount = null
+        $merchantAccount = null,
+        $recToken = null,
+        $authCode = null,
+        $orderNo = null
     ) {
         parent::__construct(
             $orderReference,
@@ -134,41 +142,42 @@ class TransactionHistory extends TransactionBase
             $baseCurrency
         );
 
-        $this->type = strval($type);
-        $this->settlementDate = $settlementDate;
-        $this->settlementAmount = $settlementAmount;
+        $this->merchantAccount = strval($merchantAccount);
+        $this->recToken = $recToken ? new CardToken($recToken) : null;
+        $this->authCode = strval($authCode);
+        $this->orderNo  = strval($orderNo);
+    }
+
+    /**
+     * @return string
+     */
+    public function getMerchantAccount()
+    {
+        return $this->merchantAccount;
+    }
+
+    /**
+     * @return CardToken
+     */
+    public function getRecToken()
+    {
+        return $this->recToken;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthCode()
+    {
+        return $this->authCode;
     }
 
 
     /**
      * @return string
      */
-    public function getType()
+    public function getOrderNo()
     {
-        return $this->type;
-    }
-
-    /**
-     * @return DateTime|null
-     */
-    public function getSettlementDate()
-    {
-        return $this->settlementDate;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getSettlementAmount()
-    {
-        return $this->settlementAmount;
-    }
-
-    /**
-     * @return float|null
-     */
-    public function getRefundAmount()
-    {
-        return $this->refundAmount;
+        return $this->orderNo;
     }
 }
